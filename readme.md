@@ -6,7 +6,17 @@ You should add some functions and complete the security requirements.
 
 ## requirements
 
+You must run this program in WSL shell.
+And use pip and install 
+    - flask 
+    - flask-socketio
+    - flask-sqlalchemy
+    - bcrypt
+    - uuid
+    - sqlite3
+
 ```
+pip install flask flask-socketio flask-sqlalchemy bcrypt uuid sqlite3
 git clone https://github.com/nes1049/secure-coding
 ```
 
