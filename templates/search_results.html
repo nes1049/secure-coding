@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <h3>"{{ query }}" 검색 결과</h3>
+
+  {% if results %}
+    <ul>
+      {% for product in results %}
+        <li style="border-bottom: 1px solid #ccc; margin-bottom: 10px;">
+          <a href="{{ url_for('view_product', product_id=product.id) }}">
+            {{ product.title }}
+          </a> - 가격: {{ "{:,}".format(product.price | int) }}원
+
+          {% if session.get('is_admin') == 1 %}
+            <form action="{{ url_for('delete_product', product_id=product.id) }}" method="post"
+                  style="display:inline;" onsubmit="return confirm('정말 삭제하시겠습니까?');">
+              <button type="submit" style="all: unset; color:red; cursor:pointer; margin-left: 4px;">
+                [삭제]
+              </button>
+            </form>
+          {% endif %}
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>검색 결과가 없습니다.</p>
+  {% endif %}
+{% endblock %}

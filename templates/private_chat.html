@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% block title %}{{ target_username }}님과의 채팅{% endblock %}
+{% block content %}
+<h2>{{ target_username }}님과의 채팅</h2>
+
+<ul id="messages" style="max-height: 300px; overflow-y: auto; padding-left: 0;">
+  {% for message in chat_history %}
+    {% if message.type == 'system' %}
+      <div style="text-align:center; font-style: italic; color: gray; margin-bottom: 10px;">
+        {{ message.message }}<br>
+        <small>{{ message.timestamp[:19].replace("T", " ") }}</small>
+      </div>
+    {% else %}
+      <li style="margin-bottom: 10px;">
+        {% if message.sender_id == my_id %}
+          <strong>나</strong>: {{ message.message }}<br>
+        {% else %}
+          <strong>{{ target_username }}</strong>: {{ message.message }}<br>
+        {% endif %}
+        <small style="color: #888;">{{ message.timestamp[:19].replace("T", " ") }}</small>
+      </li>
+    {% endif %}
+  {% endfor %}
+</ul>
+
+<form id="send-message-form" onsubmit="event.preventDefault(); sendMessage();">
+  <input type="text" id="message_input" name="message" placeholder="메시지를 입력하세요" autocomplete="off">
+  <button type="submit">전송</button>
+  <button type="button" onclick="sendAccount()">계좌 전송</button>
+</form>
+
+<script>
+  const socket = io();
+  const myId = "{{ session['user_id'] }}";
+  const targetId = "{{ target_id }}";
+  const targetName = "{{ target_username }}";
+
+  socket.emit('join_room', {
+    sender_id: myId,
+    receiver_id: targetId
+  });
+
+  socket.on('new_private_message', function(data) {
+    appendMessage(data.sender_id === myId ? "나" : targetName, data.message, data.timestamp);
+  });
+
+  function sendMessage() {
+    const input = document.getElementById('message_input');
+    const msg = input.value.trim();
+    if (msg === "") return;
+
+    const messageData = {
+      sender_id: myId,
+      receiver_id: targetId,
+      message: msg
+    };
+
+    socket.emit('private_message', messageData);
+    input.value = "";
+  }
+
+  function appendMessage(who, message, rawTime) {
+    const li = document.createElement('li');
+    const formatted = formatTimestamp(rawTime);
+    li.innerHTML = `<strong>${who}</strong>: ${message}<br><small style="color:#888;">${formatted}</small>`;
+    li.style.marginBottom = "10px";
+    document.getElementById('messages').appendChild(li);
+    scrollToBottom();
+  }
+
+  function formatTimestamp(raw) {
+    const date = new Date(raw);
+    return date.toLocaleString();
+  }
+
+  function scrollToBottom() {
+    const msgList = document.getElementById('messages');
+    msgList.scrollTop = msgList.scrollHeight;
+  }
+  function sendAccount() {
+  fetch("{{ url_for('get_account_info') }}")
+    .then(response => response.json())
+    .then(data => {
+      if (data.account_info) {
+        document.getElementById('message_input').value = data.account_info;
+        document.getElementById('send-message-form').requestSubmit();
+      } else {
+        alert("계좌 정보가 없습니다. 프로필에서 등록해주세요.");
+      }
+    })
+    .catch(err => {
+      console.error("계좌 전송 오류:", err);
+      alert("계좌 정보를 불러오지 못했습니다.");
+    });
+  }
+  window.onload = scrollToBottom;
+</script>
+
+{% endblock %}

@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+{% block title %}대시보드{% endblock %}
+{% block content %}
+<h2>대시보드</h2>
+
+<h3>상품 검색</h3>
+<form action="{{ url_for('search') }}" method="get" style="margin-bottom: 20px;">
+  <input type="text" name="q" placeholder="상품 이름으로 검색" required>
+  <button type="submit">검색</button>
+</form>
+<hr>
+
+<h3>내가 등록한 상품</h3>
+<ul>
+  {% for product in my_products %}
+    <li>
+      <a href="{{ url_for('view_product', product_id=product.id) }}">{{ product.title }}</a>
+      - 가격: {{ "{:,}".format(product.price | int) }}원
+      <a href="{{ url_for('edit_product', product_id=product.id) }}">[수정]</a>
+      <form action="{{ url_for('delete_product', product_id=product.id) }}" method="post"
+            style="display:inline; margin-left: 5px;" onsubmit="return confirm('정말 삭제하시겠습니까?');">
+        <button type="submit" style="
+          all: unset;
+          color: red;
+          cursor: pointer;
+        ">[삭제]</button>
+      </form>
+    </li>
+  {% else %}
+    <li>등록한 상품이 없습니다.</li>
+  {% endfor %}
+</ul>
+<p><a href="{{ url_for('new_product') }}">새 상품 등록</a></p>
+<hr>
+
+<h3>전체 상품</h3>
+<ul>
+  {% for product in all_products %}
+  <li style="border-bottom: 1px solid #ccc; margin-bottom: 10px;">
+    <a href="{{ url_for('view_product', product_id=product.id) }}">{{ product.title }}</a>
+    - 가격: {{ "{:,}".format(product.price | int) }}원
+    / 판매자: {{ product.username }}
+
+    {% if session.get('is_admin') == 1 %}
+      <form action="{{ url_for('delete_product', product_id=product.id) }}" method="post"
+            style="display:inline;" onsubmit="return confirm('정말 삭제하시겠습니까?');">
+        <button type="submit" style="all: unset; color:red; cursor:pointer; margin-left: 4px;">
+          [삭제]
+        </button>
+      </form>
+    {% endif %}
+  </li>
+  {% endfor %}
+</ul>
+
+
+<h3>실시간 채팅</h3>
+<div id="chat">
+  <ul id="messages"></ul>
+  <input id="chat_input" type="text" placeholder="메시지를 입력하세요">
+  <button onclick="sendMessage()">전송</button>
+</div>
+
+<script type="text/javascript">
+  var socket = io();
+
+  function sendMessage() {
+    var input = document.getElementById('chat_input');
+    var message = input.value;
+    if (message) {
+      socket.emit('send_message', { 'username': "{{ user.username }}", 'message': message });
+      input.value = "";
+    }
+  }
+
+
+  function addMessage(username, message, timestamp) {
+    const messages = document.getElementById('messages');
+    const item = document.createElement('li');
+
+    console.log("📦 받은 timestamp:", timestamp);
+
+    let timeStr = '[Invalid Date]';
+    if (timestamp) {
+      const dateObj = new Date(timestamp);
+      if (!isNaN(dateObj.getTime())) {
+        timeStr = dateObj.toLocaleString();  // ✅ 브라우저 로컬 포맷
+      }
+    }
+
+    item.textContent = `[${timeStr}] ${username}: ${message}`;
+    messages.appendChild(item);
+  }
+
+
+  socket.on('connect', function() {
+      console.log("채팅 서버에 연결됨");
+
+      // 저장된 메시지 로딩
+      fetch("{{ url_for('load_public_messages') }}")
+        .then(response => response.json())
+        .then(data => {
+          data.messages.forEach(function(msg) {
+            addMessage(msg.username, msg.message, msg.timestamp);
+          });
+        });
+  });
+
+  socket.on('message', function(data) {
+      addMessage(data.username, data.message, data.timestamp);
+  });
+</script>
+{% endblock %}

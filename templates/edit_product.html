@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}상품 수정{% endblock %}
+{% block content %}
+<h2>상품 수정</h2>
+<form method="post">
+  제목: <input type="text" name="title" value="{{ product.title }}" required><br>
+  설명: <textarea name="description" required>{{ product.description }}</textarea><br>
+  가격: <input type="text" name="price" value="{{ product.price }}" required><br>
+  <button type="submit">수정 완료</button>
+</form>
+{% endblock %}

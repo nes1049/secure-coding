@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}상품 상세보기{% endblock %}
+{% block content %}
+<h2>{{ product.title }}</h2>
+<!-- 상품 ID 출력 -->
+<p class="text-muted" style="font-size: 0.9em;">상품 ID: {{ product.id }}</p>
+{% if product.image_path %}
+  <img src="{{ url_for('static', filename=product.image_path) }}"
+      alt="상품 이미지" style="max-width: 300px;">
+{% endif %}
+<p>가격: {{ "{:,}".format(product.price | int) }}원</p>
+<p>
+  판매자: 
+  <a href="{{ url_for('view_user', user_id=seller['id']) }}">
+    {{ seller.username if seller else '알 수 없음' }}
+  </a>
+</p>
+<p>상품 소개: {{ product.description }}</p>
+
+<!-- 판매자와 채팅할 수 있는 기능 추가 -->
+{% if seller and session['user_id'] != seller['id'] %}
+  <p>
+    <a href="{{ url_for('private_chat', user_id=seller['id'], product_id=product.id) }}">
+      <button>채팅하기</button>
+    </a>
+  </p>
+{% endif %}
+
+{% if session['user_id'] == product.seller_id %}
+  <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 40px;">
+    <a href="{{ url_for('edit_product', product_id=product.id) }}" style="text-decoration: none;">
+      <button>상품 수정</button>
+    </a>
+    <form action="{{ url_for('delete_product', product_id=product.id) }}" method="post"
+          onsubmit="return confirm('정말 삭제하시겠습니까?');">
+      <button type="submit" style="background-color: #FF3B30;">상품 삭제</button>
+    </form>
+  </div>
+{% endif %}
+{% if session.get('is_admin') == 1 %}
+  <form action="{{ url_for('delete_product', product_id=product.id) }}" method="post"
+        style="display:inline;" onsubmit="return confirm('정말 삭제하시겠습니까?');">
+    <button type="submit" style="background:none; border:none; color:red; padding:0; margin-left: 4px; cursor:pointer;">
+      [삭제]
+    </button>
+  </form>
+{% endif %}
+{% endblock %}

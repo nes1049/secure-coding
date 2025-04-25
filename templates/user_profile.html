@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}{{ user.username }}의 프로필{% endblock %}
+{% block content %}
+<h2>{{ user.username }}의 프로필</h2>
+<p><strong>소개글:</strong></p>
+<p>{{ user.bio or '소개글이 없습니다.' }}</p>
+
+<!-- 사용자 상태 표시 -->
+{% if user.status == 'dormant' %}
+  <p style="color: gray;">이 계정은 휴면 상태입니다.</p>
+{% elif user.status == 'banned' %}
+  <p style="color: red;">이 계정은 영구 정지 상태입니다.</p>
+{% endif %}
+
+<!-- 관리자용 상태 변경 버튼 -->
+{% if session.get('is_admin') == 1 %}
+  <div class="d-flex flex-wrap gap-2 mt-3">
+    {% if user.status == 'active' %}
+    <form action="{{ url_for('set_user_status', user_id=user.id, status='dormant') }}" method="post" style="display: inline;">
+        <button type="submit" class="btn" style="background-color: #fff3cd; color: #856404; border: none;">
+          휴면 전환
+        </button>
+      </form>
+      <form action="{{ url_for('set_user_status', user_id=user.id, status='banned') }}" method="post" style="display: inline;">
+        <button type="submit" class="btn" style="background-color: #f8d7da; color: #721c24; border: none;">
+          영구 정지
+        </button>
+      </form>
+
+    {% elif user.status in ['dormant', 'banned'] %}
+    <form action="{{ url_for('set_user_status', user_id=user.id, status='active') }}" method="post" style="display: inline;">
+        <button type="submit" class="btn" style="background-color: #d4edda; color: #155724; border: none;">
+          활성화 복구
+        </button>
+      </form>
+    {% endif %}
+  </div>
+{% endif %}
+{% endblock %}

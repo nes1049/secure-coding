@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}메시지 목록{% endblock %}
+{% block content %}
+<h2>메시지 목록</h2>
+
+{% if partners %}
+  <ul>
+    {% for row in partners %}
+      <li>
+        <a href="{{ url_for('private_chat', user_id=row['chat_partner_id']) }}">
+          {{ row['chat_partner_name'] }}
+        </a>
+        {% if row['has_unread'] %}
+          - <span style="color:red;">읽지 않은 메시지 있음!</span>
+        {% endif %}
+      </li>
+    {% endfor %}
+  </ul>
+{% else %}
+  <p>현재 진행 중인 대화가 없습니다.</p>
+{% endif %}
+
+{% endblock %}

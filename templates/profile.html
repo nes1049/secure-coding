@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}프로필{% endblock %}
+{% block content %}
+<h2>프로필 관리</h2>
+<p>사용자명: {{ user.username }}</p>
+<form method="post">
+  소개글: <br>
+  <textarea name="bio" rows="4" cols="50">{{ user.bio or '' }}</textarea><br>
+
+  <hr>
+  <h3>계좌번호 등록/변경</h3>
+  <label>예금주 이름:</label><br>
+  <input type="text" name="account_holder" value="{{ user.account_holder or '' }}"><br><br>
+  <label for="bank_name">은행명:</label><br>
+  <input type="text" name="bank_name" value="{{ user.bank_name or '' }}" required><br><br>
+
+  <label for="account_number">계좌번호 (숫자만):</label><br>
+  <input type="text" name="account_number" pattern="\d*" maxlength="20"
+         value="{{ user.account_number or '' }}" required><br><br>
+  <button type="submit">프로필 업데이트</button>
+</form>
+<hr>
+<h3>비밀번호 변경</h3>
+<form method="post">
+  <input type="hidden" name="bio" value="{{ user.bio or '' }}">
+  현재 비밀번호: <input type="password" name="current_password"><br>
+  새 비밀번호: <input type="password" name="new_password"><br>
+  새 비밀번호 확인: <input type="password" name="confirm_password"><br>
+  <button type="submit">비밀번호 변경</button>
+</form>
+{% endblock %}

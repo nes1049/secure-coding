@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}새 상품 등록{% endblock %}
+{% block content %}
+<h2>상품 등록</h2>
+<form action="{{ url_for('new_product') }}" method="post" enctype="multipart/form-data">
+  <input type="text" name="title" placeholder="상품 이름" required><br>
+  <textarea name="description" placeholder="상품 설명"></textarea><br>
+  <input type="number" name="price" placeholder="가격" required><br>
+
+  <label for="image"><strong>상품 이미지 업로드 - 사진은 수정 불가!</strong></label><br>
+  <input type="file" id="image" name="image"><br>
+
+  <button type="submit">등록</button>
+</form>
+{% endblock %}
