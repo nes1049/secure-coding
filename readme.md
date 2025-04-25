@@ -28,7 +28,7 @@ sudo snap install ngrok
 ngrok http 5000
 ```
 
-# admin account
+## admin account
 
 this server progress creates its own admin account when first operated.
 
